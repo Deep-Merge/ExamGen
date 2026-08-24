@@ -1,0 +1,339 @@
+<div class="page">
+  <div class="crumbs eg-caption">Home / Exams / Create New Exam</div>
+
+  <eg-page-header
+    title="Create New Exam"
+    subtitle="Build a certification-ready examination blueprint"
+  >
+    <eg-auto-save [text]="autoSaveText()" [saving]="saving()" />
+    <button type="button" class="eg-btn eg-btn--secondary" (click)="saveDraft()">Save Draft</button>
+  </eg-page-header>
+
+  <div class="meta-row eg-caption">
+    Last modified by {{ userName }} · {{ lastSavedAt() | date: 'medium' }} · Version 3.4
+  </div>
+
+  <eg-stepper
+    [steps]="steps"
+    [activeIndex]="step()"
+    [allowNavigate]="true"
+    (stepChange)="goStep($event)"
+  />
+
+  <div class="layout">
+    <div class="main eg-card">
+      @if (step() === 0) {
+        <h2>Basic Information</h2>
+        <p class="eg-secondary intro">Define the exam identity candidates will see on their admission ticket.</p>
+        <form [formGroup]="detailsForm">
+          <div class="eg-grid-2">
+            <div class="eg-field">
+              <label class="eg-label">Exam Title <span class="req">*</span></label>
+              <input class="eg-input" formControlName="title" />
+              @if (detailsForm.controls.title.touched && detailsForm.controls.title.invalid) {
+                <div class="eg-field-error">Title is required (min 4 characters).</div>
+              }
+            </div>
+            <div class="eg-field">
+              <label class="eg-label">Exam Code <span class="req">*</span></label>
+              <input class="eg-input" formControlName="code" />
+            </div>
+          </div>
+          <div class="eg-field">
+            <label class="eg-label">Description <span class="req">*</span></label>
+            <textarea class="eg-textarea" rows="4" formControlName="description"></textarea>
+          </div>
+          <div class="eg-grid-3">
+            <div class="eg-field">
+              <label class="eg-label">Exam Category</label>
+              <select class="eg-select" formControlName="category">
+                @for (c of categories; track c) {
+                  <option [value]="c">{{ c }}</option>
+                }
+              </select>
+            </div>
+            <div class="eg-field">
+              <label class="eg-label">Exam Type</label>
+              <select class="eg-select" formControlName="type">
+                @for (t of types; track t) {
+                  <option [value]="t">{{ t }}</option>
+                }
+              </select>
+            </div>
+            <div class="eg-field">
+              <label class="eg-label">Language</label>
+              <select class="eg-select" formControlName="language">
+                @for (l of languages; track l) {
+                  <option [value]="l">{{ l }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </form>
+      }
+
+      @if (step() === 1) {
+        <h2>Exam Settings</h2>
+        <p class="eg-secondary intro">Scoring rules, timing, and delivery behavior.</p>
+        <form [formGroup]="configForm">
+          <div class="eg-grid-3">
+            <div class="eg-field">
+              <label class="eg-label">Total Marks</label>
+              <input class="eg-input" type="number" formControlName="totalMarks" />
+            </div>
+            <div class="eg-field">
+              <label class="eg-label">Passing Marks</label>
+              <input class="eg-input" type="number" formControlName="passingMarks" />
+            </div>
+            <div class="eg-field">
+              <label class="eg-label">Duration (Minutes)</label>
+              <input class="eg-input" type="number" formControlName="durationMinutes" />
+            </div>
+          </div>
+
+          <div class="toggles">
+            <div class="toggle-row">
+              <div>
+                <div class="t-title">Negative Marking</div>
+                <div class="eg-caption">Deduct marks for incorrect responses</div>
+              </div>
+              <label class="eg-toggle">
+                <input type="checkbox" formControlName="negativeMarking" />
+                <span class="slider"></span>
+              </label>
+            </div>
+            @if (configForm.controls.negativeMarking.value) {
+              <div class="eg-field" style="max-width: 180px">
+                <label class="eg-label">Penalty per wrong answer</label>
+                <input class="eg-input" type="number" step="0.05" formControlName="negativeValue" />
+              </div>
+            }
+            <div class="toggle-row">
+              <div>
+                <div class="t-title">Shuffle Questions</div>
+                <div class="eg-caption">Randomize order per candidate attempt</div>
+              </div>
+              <label class="eg-toggle">
+                <input type="checkbox" formControlName="shuffleQuestions" />
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="toggle-row">
+              <div>
+                <div class="t-title">Shuffle Answers</div>
+                <div class="eg-caption">Randomize option order for MCQ items</div>
+              </div>
+              <label class="eg-toggle">
+                <input type="checkbox" formControlName="shuffleAnswers" />
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="eg-grid-2" style="margin-top: 16px">
+            <div class="eg-field">
+              <label class="eg-label">Attempts Allowed</label>
+              <input class="eg-input" type="number" formControlName="attemptsAllowed" />
+            </div>
+            <div class="eg-field">
+              <label class="eg-label">Show Results</label>
+              <select class="eg-select" formControlName="showResults">
+                @for (o of showResultsOptions; track o) {
+                  <option [value]="o">{{ o }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </form>
+      }
+
+      @if (step() === 2) {
+        <h2>Question Selection</h2>
+        <p class="eg-secondary intro">
+          Pull items from the enterprise question bank. Selected {{ selectedQuestionIds().length }} ·
+          {{ selectedMarks() }} marks
+        </p>
+        <div class="q-filters">
+          <input
+            class="eg-input"
+            placeholder="Search stem or ID…"
+            [value]="qFilter()"
+            (input)="qFilter.set($any($event.target).value)"
+          />
+          <select
+            class="eg-select"
+            [value]="qCategory()"
+            (change)="qCategory.set($any($event.target).value)"
+          >
+            <option value="">All categories</option>
+            @for (c of categories; track c) {
+              <option [value]="c">{{ c }}</option>
+            }
+          </select>
+        </div>
+        <div class="q-list">
+          @for (q of filteredQuestions(); track q.id) {
+            <label class="q-row" [class.on]="isSelected(q.id)">
+              <input type="checkbox" [checked]="isSelected(q.id)" (change)="toggleQuestion(q)" />
+              <div class="q-body">
+                <div class="q-stem">{{ q.stem }}</div>
+                <div class="eg-caption">
+                  {{ q.id }} · {{ q.type }} · {{ q.difficulty }} · {{ q.marks }} marks · {{ q.category }}
+                </div>
+              </div>
+            </label>
+          }
+        </div>
+      }
+
+      @if (step() === 3) {
+        <h2>Schedule & Access</h2>
+        <p class="eg-secondary intro">Window, organizations, and entry controls.</p>
+        <form [formGroup]="scheduleForm">
+          <div class="eg-grid-2">
+            <div class="eg-field">
+              <label class="eg-label">Scheduled Start</label>
+              <input class="eg-input" type="datetime-local" formControlName="scheduledStart" />
+            </div>
+            <div class="eg-field">
+              <label class="eg-label">Scheduled End</label>
+              <input class="eg-input" type="datetime-local" formControlName="scheduledEnd" />
+            </div>
+          </div>
+          <div class="eg-grid-2">
+            <div class="eg-field">
+              <label class="eg-label">Access Code</label>
+              <input class="eg-input" formControlName="accessCode" />
+            </div>
+            <div class="eg-field">
+              <label class="eg-label">Late Join Grace (minutes)</label>
+              <input class="eg-input" type="number" formControlName="allowLateJoinMinutes" />
+            </div>
+          </div>
+          <div class="toggle-row" style="margin-bottom: 16px">
+            <div>
+              <div class="t-title">Require ID Verification</div>
+              <div class="eg-caption">Candidates must upload government ID before check-in</div>
+            </div>
+            <label class="eg-toggle">
+              <input type="checkbox" formControlName="requireIdVerification" />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="eg-field">
+            <label class="eg-label">Organizations with access</label>
+            <div class="org-grid">
+              @for (org of organizations; track org.id) {
+                <label class="org-chip" [class.on]="orgSelected(org.id)">
+                  <input type="checkbox" [checked]="orgSelected(org.id)" (change)="toggleOrg(org.id)" />
+                  {{ org.name }}
+                </label>
+              }
+            </div>
+          </div>
+        </form>
+      }
+
+      @if (step() === 4) {
+        <h2>Review & Publish</h2>
+        <p class="eg-secondary intro">Confirm blueprint before releasing to enrollment.</p>
+        <div class="review-grid">
+          <div class="review-block">
+            <h3>Identity</h3>
+            <dl>
+              <div><dt>Title</dt><dd>{{ detailsForm.value.title }}</dd></div>
+              <div><dt>Code</dt><dd>{{ detailsForm.value.code }}</dd></div>
+              <div><dt>Category</dt><dd>{{ detailsForm.value.category }}</dd></div>
+              <div><dt>Type</dt><dd>{{ detailsForm.value.type }}</dd></div>
+              <div><dt>Language</dt><dd>{{ detailsForm.value.language }}</dd></div>
+            </dl>
+          </div>
+          <div class="review-block">
+            <h3>Scoring & Delivery</h3>
+            <dl>
+              <div><dt>Marks</dt><dd>{{ configForm.value.totalMarks }} (pass {{ configForm.value.passingMarks }})</dd></div>
+              <div><dt>Duration</dt><dd>{{ configForm.value.durationMinutes }} minutes</dd></div>
+              <div><dt>Attempts</dt><dd>{{ configForm.value.attemptsAllowed }}</dd></div>
+              <div><dt>Shuffle</dt><dd>Q {{ configForm.value.shuffleQuestions ? 'Yes' : 'No' }} / A {{ configForm.value.shuffleAnswers ? 'Yes' : 'No' }}</dd></div>
+              <div><dt>Negative</dt><dd>{{ configForm.value.negativeMarking ? configForm.value.negativeValue : 'Off' }}</dd></div>
+            </dl>
+          </div>
+          <div class="review-block">
+            <h3>Bank & Access</h3>
+            <dl>
+              <div><dt>Questions</dt><dd>{{ selectedQuestionIds().length }} selected ({{ selectedMarks() }} marks)</dd></div>
+              <div><dt>Organizations</dt><dd>{{ scheduleForm.value.organizationIds?.length }} tenants</dd></div>
+              <div><dt>Window</dt><dd>{{ scheduleForm.value.scheduledStart }} → {{ scheduleForm.value.scheduledEnd }}</dd></div>
+              <div><dt>Access code</dt><dd>{{ scheduleForm.value.accessCode }}</dd></div>
+            </dl>
+          </div>
+        </div>
+        <div class="checklist">
+          <div class="ok">Identity fields complete</div>
+          <div class="ok">Configuration validated</div>
+          <div [class.ok]="selectedQuestionIds().length >= 10" [class.warn]="selectedQuestionIds().length < 10">
+            Question bank selection {{ selectedQuestionIds().length >= 10 ? 'ready' : 'needs ≥10 items' }}
+          </div>
+          <div class="ok">Schedule & org access set</div>
+        </div>
+      }
+
+      <div class="footer-actions">
+        <a class="eg-btn eg-btn--ghost" routerLink="/exams">Cancel</a>
+        <div class="spacer"></div>
+        @if (step() > 0) {
+          <button type="button" class="eg-btn eg-btn--secondary" (click)="back()">Back</button>
+        }
+        @if (step() < steps.length - 1) {
+          <button type="button" class="eg-btn eg-btn--primary" (click)="next()">Save & Next</button>
+        } @else {
+          <button type="button" class="eg-btn eg-btn--primary" (click)="openPublish()">Publish Exam</button>
+        }
+      </div>
+    </div>
+
+    <aside class="rail">
+      <div class="eg-card summary">
+        <div class="sum-title">Exam Preview</div>
+        <div class="sum-name">{{ detailsForm.value.title || 'Untitled exam' }}</div>
+        <div class="eg-caption" style="margin-bottom: 14px">{{ detailsForm.value.code }}</div>
+        <div class="sum-row"><span>Questions</span><strong>{{ selectedQuestionIds().length }}</strong></div>
+        <div class="sum-row"><span>Selected marks</span><strong>{{ selectedMarks() }}</strong></div>
+        <div class="sum-row"><span>Total marks</span><strong>{{ configForm.value.totalMarks }}</strong></div>
+        <div class="sum-row"><span>Passing</span><strong>{{ configForm.value.passingMarks }}</strong></div>
+        <div class="sum-row"><span>Duration</span><strong>{{ configForm.value.durationMinutes }} min</strong></div>
+        <div class="sum-row"><span>Attempts</span><strong>{{ configForm.value.attemptsAllowed }}</strong></div>
+        <div class="sum-row"><span>Language</span><strong>{{ detailsForm.value.language }}</strong></div>
+        <div class="draft-note">
+          <eg-status-badge label="Draft" tone="warning" />
+          <span>This exam will be saved as a draft until you publish.</span>
+        </div>
+      </div>
+      <div class="eg-card help">
+        <div class="sum-title">Publishing checklist</div>
+        <ul>
+          <li>Align passing score with blueprint policy</li>
+          <li>Verify negative marking with SME review</li>
+          <li>Confirm org enrollment windows</li>
+          <li>Enable proctoring from Live Monitoring</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</div>
+
+@if (showPublishConfirm()) {
+  <div class="modal-backdrop" (click)="showPublishConfirm.set(false)">
+    <div class="modal eg-card" (click)="$event.stopPropagation()">
+      <h2>Publish this exam?</h2>
+      <p class="eg-secondary">
+        {{ detailsForm.value.title }} will become available for enrollment across
+        {{ scheduleForm.value.organizationIds?.length }} organizations.
+      </p>
+      <div class="modal-actions">
+        <button type="button" class="eg-btn eg-btn--secondary" (click)="showPublishConfirm.set(false)">Cancel</button>
+        <button type="button" class="eg-btn eg-btn--primary" (click)="confirmPublish()">Confirm Publish</button>
+      </div>
+    </div>
+  </div>
+}

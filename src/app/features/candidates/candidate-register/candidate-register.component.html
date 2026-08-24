@@ -1,0 +1,326 @@
+<div class="page">
+  <div class="crumbs eg-caption">Home / Candidates / Register</div>
+
+  <eg-page-header
+    title="Register Candidate"
+    subtitle="Enterprise enrollment with verification and exam assignment"
+  >
+    <eg-status-badge label="Draft enrollment" tone="warning" />
+  </eg-page-header>
+
+  <div class="meta-row eg-caption">
+    Created by {{ userName }} · {{ createdAt | date: 'medium' }} · Enrollment draft
+  </div>
+
+  <eg-stepper
+    [steps]="steps"
+    [activeIndex]="step()"
+    [allowNavigate]="true"
+    (stepChange)="goStep($event)"
+  />
+
+  <div class="layout">
+    <div class="main eg-card">
+      @if (step() === 0) {
+        <h2>Personal Information</h2>
+        <p class="eg-secondary intro">Identity details used for admission and proctoring verification.</p>
+        <form [formGroup]="personalForm">
+          <div class="avatar-row">
+            <div class="avatar-wrap">
+              @if (avatarPreview()) {
+                <img [src]="avatarPreview()!" alt="Avatar preview" class="avatar-img" />
+              } @else {
+                <span class="avatar-placeholder">{{ avatarInitials() }}</span>
+              }
+            </div>
+            <div class="avatar-actions">
+              <label class="eg-btn eg-btn--secondary eg-btn--sm">
+                Upload photo
+                <input type="file" accept="image/*" hidden (change)="onAvatarChange($event)" />
+              </label>
+              <div class="eg-caption">JPG or PNG, max 2 MB</div>
+            </div>
+          </div>
+          <div class="eg-grid-2">
+            <div class="eg-field">
+              <label class="eg-label">First name <span class="req">*</span></label>
+              <input class="eg-input" formControlName="firstName" />
+            </div>
+            <div class="eg-field">
+              <label class="eg-label">Last name <span class="req">*</span></label>
+              <input class="eg-input" formControlName="lastName" />
+            </div>
+          </div>
+          <div class="eg-grid-2">
+            <div class="eg-field">
+              <label class="eg-label">Email <span class="req">*</span></label>
+              <input class="eg-input" type="email" formControlName="email" />
+            </div>
+            <div class="eg-field">
+              <label class="eg-label">Phone <span class="req">*</span></label>
+              <input class="eg-input" formControlName="phone" />
+            </div>
+          </div>
+          <div class="eg-grid-3">
+            <div class="eg-field">
+              <label class="eg-label">Date of birth</label>
+              <input class="eg-input" type="date" formControlName="dateOfBirth" />
+            </div>
+            <div class="eg-field">
+              <label class="eg-label">Gender</label>
+              <select class="eg-select" formControlName="gender">
+                <option>Male</option>
+                <option>Female</option>
+                <option>Non-binary</option>
+                <option>Prefer not to say</option>
+              </select>
+            </div>
+            <div class="eg-field">
+              <label class="eg-label">Country</label>
+              <select class="eg-select" formControlName="country">
+                @for (c of countries; track c) {
+                  <option [value]="c">{{ c }}</option>
+                }
+              </select>
+            </div>
+          </div>
+          <div class="eg-field">
+            <label class="eg-label">Street address</label>
+            <input class="eg-input" formControlName="address" />
+          </div>
+          <div class="eg-field">
+            <label class="eg-label">City</label>
+            <input class="eg-input" formControlName="city" />
+          </div>
+          <div class="file-row">
+            <label class="eg-label">Government ID proof</label>
+            @if (idProofFile()) {
+              <div class="file-chip">
+                <span>{{ idProofFile() }}</span>
+                <button type="button" class="chip-x" (click)="removeFile('id')">×</button>
+              </div>
+            } @else {
+              <label class="eg-btn eg-btn--secondary eg-btn--sm">
+                Upload ID
+                <input type="file" accept=".pdf,.jpg,.png" hidden (change)="onFilePick($event, 'id')" />
+              </label>
+            }
+          </div>
+          <div class="file-row">
+            <label class="eg-label">Resume (optional)</label>
+            @if (resumeFile()) {
+              <div class="file-chip">
+                <span>{{ resumeFile() }}</span>
+                <button type="button" class="chip-x" (click)="removeFile('resume')">×</button>
+              </div>
+            } @else {
+              <label class="eg-btn eg-btn--secondary eg-btn--sm">
+                Upload resume
+                <input type="file" accept=".pdf,.doc,.docx" hidden (change)="onFilePick($event, 'resume')" />
+              </label>
+            }
+          </div>
+        </form>
+      }
+
+      @if (step() === 1) {
+        <h2>Organization</h2>
+        <p class="eg-secondary intro">Assign the candidate to a tenant and department.</p>
+        <form [formGroup]="orgForm">
+          <div class="eg-field">
+            <label class="eg-label">Organization <span class="req">*</span></label>
+            <select class="eg-select" formControlName="organizationId">
+              @for (org of organizations; track org.id) {
+                <option [value]="org.id">{{ org.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="eg-grid-2">
+            <div class="eg-field">
+              <label class="eg-label">Department</label>
+              <select class="eg-select" formControlName="department">
+                @for (d of departments; track d) {
+                  <option [value]="d">{{ d }}</option>
+                }
+              </select>
+            </div>
+            <div class="eg-field">
+              <label class="eg-label">Cohort / Group</label>
+              <input class="eg-input" formControlName="groupName" />
+            </div>
+          </div>
+          <div class="eg-grid-2">
+            <div class="eg-field">
+              <label class="eg-label">Employee ID</label>
+              <input class="eg-input" formControlName="employeeId" />
+            </div>
+            <div class="eg-field">
+              <label class="eg-label">Manager email</label>
+              <input class="eg-input" type="email" formControlName="managerEmail" />
+            </div>
+          </div>
+        </form>
+      }
+
+      @if (step() === 2) {
+        <h2>Exam Assignment</h2>
+        <p class="eg-secondary intro">
+          Select published exams for enrollment. {{ selectedExamIds().length }} selected.
+        </p>
+        <div class="exam-list">
+          @for (exam of publishedExams(); track exam.id) {
+            <label class="exam-row" [class.on]="isExamSelected(exam.id)">
+              <input type="checkbox" [checked]="isExamSelected(exam.id)" (change)="toggleExam(exam.id)" />
+              <div>
+                <div class="exam-title">{{ exam.title }}</div>
+                <div class="eg-caption">
+                  {{ exam.code }} · {{ exam.durationMinutes }} min · {{ exam.questionCount }} questions
+                </div>
+              </div>
+            </label>
+          }
+        </div>
+      }
+
+      @if (step() === 3) {
+        <h2>Access & Permissions</h2>
+        <p class="eg-secondary intro">Delivery window, invitations, and security controls.</p>
+        <form [formGroup]="accessForm">
+          <div class="eg-grid-2">
+            <div class="eg-field">
+              <label class="eg-label">Access window start</label>
+              <input class="eg-input" type="datetime-local" formControlName="accessWindowStart" />
+            </div>
+            <div class="eg-field">
+              <label class="eg-label">Access window end</label>
+              <input class="eg-input" type="datetime-local" formControlName="accessWindowEnd" />
+            </div>
+          </div>
+          <div class="toggles">
+            <div class="toggle-row">
+              <div>
+                <div class="t-title">Send invitation email</div>
+                <div class="eg-caption">Deliver enrollment link upon registration</div>
+              </div>
+              <label class="eg-toggle">
+                <input type="checkbox" formControlName="sendInvite" />
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="toggle-row">
+              <div>
+                <div class="t-title">Require MFA</div>
+                <div class="eg-caption">Multi-factor authentication at check-in</div>
+              </div>
+              <label class="eg-toggle">
+                <input type="checkbox" formControlName="requireMfa" />
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="toggle-row">
+              <div>
+                <div class="t-title">Allow remote proctoring</div>
+                <div class="eg-caption">Enable live monitoring for assigned exams</div>
+              </div>
+              <label class="eg-toggle">
+                <input type="checkbox" formControlName="allowRemoteProctor" />
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+          <div class="eg-field">
+            <label class="eg-label">Enrollment notes</label>
+            <textarea class="eg-textarea" rows="3" formControlName="notes"></textarea>
+          </div>
+        </form>
+      }
+
+      @if (step() === 4) {
+        <h2>Review & Submit</h2>
+        <p class="eg-secondary intro">Confirm enrollment details before saving.</p>
+        <div class="review-grid">
+          <div class="review-block">
+            <h3>Personal</h3>
+            <dl>
+              <div><dt>Name</dt><dd>{{ personalForm.value.firstName }} {{ personalForm.value.lastName }}</dd></div>
+              <div><dt>Email</dt><dd>{{ personalForm.value.email }}</dd></div>
+              <div><dt>Phone</dt><dd>{{ personalForm.value.phone }}</dd></div>
+              <div><dt>Location</dt><dd>{{ personalForm.value.city }}, {{ personalForm.value.country }}</dd></div>
+            </dl>
+          </div>
+          <div class="review-block">
+            <h3>Organization</h3>
+            <dl>
+              <div><dt>Tenant</dt><dd>{{ selectedOrgName() }}</dd></div>
+              <div><dt>Department</dt><dd>{{ orgForm.value.department }}</dd></div>
+              <div><dt>Group</dt><dd>{{ orgForm.value.groupName }}</dd></div>
+            </dl>
+          </div>
+          <div class="review-block">
+            <h3>Exams & Access</h3>
+            <dl>
+              <div><dt>Exams</dt><dd>{{ selectedExamIds().length }} assigned</dd></div>
+              <div><dt>Invite</dt><dd>{{ accessForm.value.sendInvite ? 'Yes' : 'No' }}</dd></div>
+              <div><dt>MFA</dt><dd>{{ accessForm.value.requireMfa ? 'Required' : 'Optional' }}</dd></div>
+            </dl>
+          </div>
+        </div>
+        <div class="checklist">
+          <div class="ok">Personal information complete</div>
+          <div class="ok">Organization assigned</div>
+          <div [class.ok]="selectedExamIds().length > 0" [class.warn]="selectedExamIds().length === 0">
+            Exam assignment {{ selectedExamIds().length > 0 ? 'ready' : 'required' }}
+          </div>
+          <div class="ok">Access controls configured</div>
+        </div>
+      }
+
+      <div class="footer-actions">
+        <a class="eg-btn eg-btn--ghost" routerLink="/candidates">Cancel</a>
+        <div class="spacer"></div>
+        @if (step() > 0) {
+          <button type="button" class="eg-btn eg-btn--secondary" (click)="back()">Back</button>
+        }
+        @if (step() < steps.length - 1) {
+          <button type="button" class="eg-btn eg-btn--primary" (click)="next()">Save & Next</button>
+        } @else {
+          <button type="button" class="eg-btn eg-btn--primary" (click)="submit()">Register Candidate</button>
+        }
+      </div>
+    </div>
+
+    <aside class="rail">
+      <div class="eg-card summary">
+        <div class="sum-title">Enrollment Preview</div>
+        <div class="sum-avatar">
+          @if (avatarPreview()) {
+            <img [src]="avatarPreview()!" alt="" class="avatar-img sm" />
+          } @else {
+            <span class="avatar-placeholder sm">{{ avatarInitials() }}</span>
+          }
+        </div>
+        <div class="sum-name">{{ personalForm.value.firstName }} {{ personalForm.value.lastName }}</div>
+        <div class="eg-caption" style="margin-bottom: 14px">{{ personalForm.value.email }}</div>
+        <div class="sum-row"><span>Organization</span><strong>{{ selectedOrgName() || '—' }}</strong></div>
+        <div class="sum-row"><span>Department</span><strong>{{ orgForm.value.department }}</strong></div>
+        <div class="sum-row"><span>Exams</span><strong>{{ selectedExamIds().length }}</strong></div>
+        <div class="sum-row"><span>ID proof</span><strong>{{ idProofFile() ? 'Uploaded' : 'Pending' }}</strong></div>
+        <div class="sum-row"><span>Resume</span><strong>{{ resumeFile() ? 'Uploaded' : '—' }}</strong></div>
+        <div class="draft-note">
+          <eg-status-badge label="Registered" tone="warning" />
+          <span>Candidate will be saved with Registered status.</span>
+        </div>
+      </div>
+      @if (selectedExams().length) {
+        <div class="eg-card help">
+          <div class="sum-title">Assigned exams</div>
+          <ul>
+            @for (exam of selectedExams(); track exam.id) {
+              <li>{{ exam.title }}</li>
+            }
+          </ul>
+        </div>
+      }
+    </aside>
+  </div>
+</div>

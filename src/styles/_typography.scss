@@ -1,0 +1,15 @@
+body {
+  font-family: var(--eg-font);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--eg-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, .eg-h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; margin: 0; }
+h2, .eg-h2 { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+h3, .eg-h3 { font-size: 16px; font-weight: 600; margin: 0; }
+.eg-body { font-size: 14px; }
+.eg-caption { font-size: 12px; color: var(--eg-text-secondary); }
+.eg-muted { color: var(--eg-text-muted); }
+.eg-secondary { color: var(--eg-text-secondary); }
