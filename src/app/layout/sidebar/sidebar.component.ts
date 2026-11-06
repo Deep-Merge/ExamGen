@@ -30,7 +30,22 @@ interface NavGroup {
   template: `
     <aside class="sidebar">
       <div class="brand">
-        <img class="brand-icon-main" src="icon.png" width="40" height="40" alt="" />
+        <span class="mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="32" height="32">
+            <path
+              d="M16 3.2 27.2 9.6v12.8L16 28.8 4.8 22.4V9.6L16 3.2Z"
+              fill="#2563EB"
+            />
+            <path
+              d="m10.2 16.2 3.6 3.6 8-8.2"
+              fill="none"
+              stroke="#fff"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </span>
         <div class="brand-text">
           <div class="name" aria-label="Evalis">
             <span class="exam">Eval</span><span class="gen">is</span>
@@ -41,7 +56,6 @@ interface NavGroup {
             <span class="rule"></span>
           </div>
         </div>
-        <img class="brand-icon" src="icon.png" width="40" height="40" alt="Evalis" />
       </div>
 
       <nav class="nav">
@@ -162,14 +176,23 @@ interface NavGroup {
         border-bottom: 1px solid rgba(148, 163, 184, 0.1);
         background: #0b1220;
       }
-      .brand-icon-main {
-        width: 40px;
-        height: 40px;
-        object-fit: contain;
+      .mark {
+        width: 36px;
+        height: 36px;
         border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         flex-shrink: 0;
-        background: #000;
-        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+        background: rgba(37, 99, 235, 0.12);
+        transition: background 0.2s ease, transform 0.2s ease;
+      }
+      .brand:hover .mark {
+        background: rgba(37, 99, 235, 0.2);
+        transform: translateY(-1px);
+      }
+      .mark svg {
+        display: block;
       }
       .brand-text {
         min-width: 0;
@@ -206,13 +229,6 @@ interface NavGroup {
         flex-shrink: 0;
         opacity: 0.85;
       }
-      .brand-icon {
-        display: none;
-        width: 40px;
-        height: 40px;
-        object-fit: contain;
-        border-radius: 10px;
-      }
       .nav {
         flex: 1;
         overflow-y: auto;
@@ -245,6 +261,7 @@ interface NavGroup {
       .item:hover {
         background: rgba(30, 41, 59, 0.85);
         color: #e2e8f0;
+        transform: translateX(2px);
       }
       .item.active {
         background: linear-gradient(90deg, rgba(37, 99, 235, 0.28), rgba(37, 99, 235, 0.08));
@@ -287,12 +304,8 @@ interface NavGroup {
         .group-title,
         .label,
         .footer,
-        .brand-text,
-        .brand-icon-main {
+        .brand-text {
           display: none;
-        }
-        .brand-icon {
-          display: block;
         }
         .brand {
           justify-content: center;

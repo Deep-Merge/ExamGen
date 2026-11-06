@@ -18,10 +18,31 @@ a { color: inherit; text-decoration: none; }
 
 button, input, select, textarea { font: inherit; }
 
-::-webkit-scrollbar { width: 8px; height: 8px; }
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c5d0de transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background: #c5d0de;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 .ag-theme-alpine {
@@ -45,17 +66,29 @@ textarea:focus-visible {
 }
 
 .eg-page-enter {
-  animation: egFadeUp 0.28s ease-out;
+  animation: egFadeUp 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes egFadeUp {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+table tbody tr {
+  transition: background 0.16s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 

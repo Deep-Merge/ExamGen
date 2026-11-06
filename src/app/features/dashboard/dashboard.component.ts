@@ -92,7 +92,7 @@ type KpiKey = 'exams' | 'bank' | 'candidates' | 'orgs' | 'upcoming' | 'sessions'
         }
       </div>
 
-      <div class="mid">
+      <div class="charts">
         <div class="eg-card chart-card">
           <div class="card-head">
             <div>
@@ -102,10 +102,24 @@ type KpiKey = 'exams' | 'bank' | 'candidates' | 'orgs' | 'upcoming' | 'sessions'
             <span class="live-pill">Live</span>
           </div>
           <div class="chart-wrap">
-            <canvas baseChart [data]="lineData" [options]="lineOptions" [type]="'line'"></canvas>
+            <canvas baseChart [data]="lineData" [options]="chartOptions" [type]="'line'"></canvas>
           </div>
         </div>
 
+        <div class="eg-card chart-card">
+          <div class="card-head">
+            <div>
+              <h2>Score distribution</h2>
+              <div class="eg-caption">Last 30 days · candidates by band</div>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas baseChart [data]="scoreData" [options]="chartOptions" [type]="'line'"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="split">
         <div class="eg-card activity-card">
           <div class="card-head">
             <div>
@@ -129,9 +143,7 @@ type KpiKey = 'exams' | 'bank' | 'candidates' | 'orgs' | 'upcoming' | 'sessions'
             }
           </ul>
         </div>
-      </div>
 
-      <div class="bottom">
         <div class="eg-card table-card">
           <div class="card-head">
             <div>
@@ -167,18 +179,6 @@ type KpiKey = 'exams' | 'bank' | 'candidates' | 'orgs' | 'upcoming' | 'sessions'
               }
             </tbody>
           </table>
-        </div>
-
-        <div class="eg-card chart-card">
-          <div class="card-head">
-            <div>
-              <h2>Score distribution</h2>
-              <div class="eg-caption">Last 30 days</div>
-            </div>
-          </div>
-          <div class="chart-wrap">
-            <canvas baseChart [data]="barData" [options]="barOptions" [type]="'bar'"></canvas>
-          </div>
         </div>
       </div>
     </div>
@@ -253,13 +253,20 @@ type KpiKey = 'exams' | 'bank' | 'candidates' | 'orgs' | 'upcoming' | 'sessions'
         line-height: 1;
       }
 
-      .mid,
-      .bottom {
+      .charts {
         display: grid;
-        grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr);
+        grid-template-columns: 1fr 1fr;
         gap: 16px;
         margin-bottom: 16px;
         width: 100%;
+      }
+      .split {
+        display: grid;
+        grid-template-columns: 1fr 1.35fr;
+        gap: 16px;
+        margin-bottom: 16px;
+        width: 100%;
+        align-items: stretch;
       }
       .chart-card,
       .activity-card,
@@ -304,11 +311,11 @@ type KpiKey = 'exams' | 'bank' | 'candidates' | 'orgs' | 'upcoming' | 'sessions'
         box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
       }
       .chart-wrap {
-        height: 280px;
+        height: 220px;
         width: 100%;
       }
       .chart-wrap canvas {
-        max-height: 280px;
+        max-height: 220px;
         width: 100% !important;
       }
 
@@ -371,15 +378,18 @@ type KpiKey = 'exams' | 'bank' | 'candidates' | 'orgs' | 'upcoming' | 'sessions'
       }
       .mini-bar {
         width: 64px;
-        height: 5px;
-        background: #e2e8f0;
+        height: 6px;
+        background: #e8eef6;
         border-radius: 999px;
         overflow: hidden;
+        box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.04);
       }
       .mini-bar span {
         display: block;
         height: 100%;
-        background: linear-gradient(90deg, #2563eb, #60a5fa);
+        border-radius: 999px;
+        background: linear-gradient(90deg, #1d4ed8, #60a5fa);
+        transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
       }
       .link {
         color: #2563eb;
@@ -391,7 +401,8 @@ type KpiKey = 'exams' | 'bank' | 'candidates' | 'orgs' | 'upcoming' | 'sessions'
         .kpi-grid { grid-template-columns: repeat(3, 1fr); }
       }
       @media (max-width: 1100px) {
-        .mid, .bottom { grid-template-columns: 1fr; }
+        .charts,
+        .split { grid-template-columns: 1fr; }
       }
       @media (max-width: 720px) {
         .kpi-grid { grid-template-columns: repeat(2, 1fr); }
@@ -431,53 +442,71 @@ export class DashboardComponent {
 
   upcoming = this.data.sessions.filter((s) => s.status === 'Scheduled').slice(0, 6);
 
+  private line(color: string): ChartConfiguration<'line'>['data']['datasets'][0] {
+    return {
+      data: [],
+      borderColor: color,
+      backgroundColor: 'rgba(37, 99, 235, 0.08)',
+      fill: true,
+      tension: 0.42,
+      pointRadius: 3.5,
+      pointHoverRadius: 5,
+      pointBackgroundColor: '#fff',
+      pointBorderColor: color,
+      pointBorderWidth: 2,
+      borderWidth: 2,
+    };
+  }
+
   lineData: ChartConfiguration<'line'>['data'] = {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     datasets: [
       {
+        ...this.line('#2563EB'),
         data: [420, 510, 480, 620, 710, 390, 450],
         label: 'Completions',
-        borderColor: '#2563EB',
-        backgroundColor: 'rgba(37,99,235,0.10)',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 0,
-        pointHoverRadius: 5,
-        borderWidth: 2.5,
       },
     ],
   };
 
-  lineOptions: ChartConfiguration<'line'>['options'] = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: {
-      x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 } }, border: { display: false } },
-      y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { color: '#94a3b8', font: { size: 11 } }, border: { display: false } },
-    },
-  };
-
-  barData: ChartConfiguration<'bar'>['data'] = {
-    labels: ['0-49', '50-59', '60-69', '70-79', '80-89', '90-100'],
+  scoreData: ChartConfiguration<'line'>['data'] = {
+    labels: ['0–49', '50–59', '60–69', '70–79', '80–89', '90–100'],
     datasets: [
       {
+        ...this.line('#2563EB'),
         data: [28, 64, 110, 240, 310, 180],
-        backgroundColor: ['#bfdbfe', '#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8'],
-        borderRadius: 6,
         label: 'Candidates',
-        barThickness: 36,
       },
     ],
   };
 
-  barOptions: ChartConfiguration<'bar'>['options'] = {
+  chartOptions: ChartConfiguration<'line'>['options'] = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#0f172a',
+        titleFont: { size: 12 },
+        bodyFont: { size: 12 },
+        padding: 10,
+        cornerRadius: 8,
+        displayColors: false,
+      },
+    },
     scales: {
-      x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 } }, border: { display: false } },
-      y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { color: '#94a3b8', font: { size: 11 } }, border: { display: false } },
+      x: {
+        grid: { display: false },
+        ticks: { color: '#94a3b8', font: { size: 11 } },
+        border: { display: false },
+      },
+      y: {
+        beginAtZero: true,
+        grid: { color: '#f1f5f9' },
+        ticks: { color: '#94a3b8', font: { size: 11 }, maxTicksLimit: 5 },
+        border: { display: false },
+      },
     },
   };
 }

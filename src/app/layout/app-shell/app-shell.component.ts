@@ -12,8 +12,10 @@ import { TopbarComponent } from '../topbar/topbar.component';
       <eg-sidebar />
       <div class="main">
         <eg-topbar />
-        <main class="content eg-page-enter">
-          <router-outlet />
+        <main class="content">
+          <div class="content-frame eg-page-enter">
+            <router-outlet />
+          </div>
         </main>
       </div>
     </div>
@@ -36,14 +38,35 @@ import { TopbarComponent } from '../topbar/topbar.component';
         overflow: hidden;
       }
       .content {
-        padding: 20px 24px;
+        padding: 22px 28px 28px;
         flex: 1;
         min-height: 0;
         width: 100%;
         overflow: auto;
+        display: flex;
+        justify-content: center;
         background:
-          radial-gradient(1400px 480px at 100% -12%, rgba(37, 99, 235, 0.06), transparent 55%),
+          radial-gradient(1200px 420px at 80% -8%, rgba(37, 99, 235, 0.05), transparent 50%),
           var(--eg-bg);
+      }
+      .content-frame {
+        width: 75%;
+        max-width: 1280px;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
+      }
+      .content-frame > :not(router-outlet) {
+        width: 100%;
+        flex: 1 1 auto;
+        min-height: 0;
+      }
+      @media (max-width: 1100px) {
+        .content-frame {
+          width: 100%;
+          max-width: none;
+        }
       }
       @media (max-width: 720px) {
         .content {

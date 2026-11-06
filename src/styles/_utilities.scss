@@ -3,6 +3,7 @@
   border: 1px solid rgba(226, 232, 240, 0.95);
   border-radius: var(--eg-radius-lg);
   box-shadow: var(--eg-shadow);
+  transition: box-shadow 0.22s ease, border-color 0.22s ease, transform 0.22s ease;
 }
 
 .eg-btn {
@@ -19,7 +20,7 @@
   font-weight: 550;
   letter-spacing: -0.01em;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s, transform 0.12s;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.18s ease;
 
   &:disabled {
     opacity: 0.5;

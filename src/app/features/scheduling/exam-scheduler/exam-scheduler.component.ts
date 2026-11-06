@@ -115,8 +115,10 @@ interface CalDay {
                   <div class="eg-caption">{{ room.sessions }} sessions</div>
                 </div>
                 <div class="capacity">
-                  <div class="bar"><span [style.width.%]="room.utilization"></span></div>
-                  <span class="eg-caption">{{ room.enrolled }}/{{ room.capacity }}</span>
+                  <div class="bar" [attr.aria-valuenow]="room.utilization" role="meter">
+                    <span [style.width.%]="room.utilization"></span>
+                  </div>
+                  <span class="eg-caption">{{ room.utilization }}% full</span>
                 </div>
               </div>
             }
@@ -145,8 +147,8 @@ interface CalDay {
     `
       :host {
         display: block;
-        height: calc(100vh - var(--eg-topbar-height) - 40px);
-        max-height: calc(100vh - var(--eg-topbar-height) - 40px);
+        height: calc(100vh - var(--eg-topbar-height) - 50px);
+        max-height: calc(100vh - var(--eg-topbar-height) - 50px);
       }
       .scheduler-page {
         width: 100%;
@@ -440,16 +442,19 @@ interface CalDay {
         min-width: 100px;
       }
       .bar {
-        height: 5px;
-        background: #e2e8f0;
+        height: 6px;
+        background: #e8eef6;
         border-radius: 999px;
         overflow: hidden;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
+        box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.04);
       }
       .bar span {
         display: block;
         height: 100%;
-        background: linear-gradient(90deg, #2563eb, #60a5fa);
+        border-radius: 999px;
+        background: linear-gradient(90deg, #1d4ed8, #60a5fa);
+        transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
       }
       .session-row {
         padding: 10px 0;
@@ -554,20 +559,21 @@ export class ExamSchedulerComponent {
   });
 
   roomStats = computed(() => {
-    const map = new Map<string, { room: string; capacity: number; enrolled: number; sessions: number }>();
+    const map = new Map<string, { room: string; capacity: number; enrolled: number; sessions: number; fill: number }>();
     for (const s of this.sessions) {
-      const cur = map.get(s.room) ?? { room: s.room, capacity: s.capacity, enrolled: 0, sessions: 0 };
+      const cur = map.get(s.room) ?? { room: s.room, capacity: s.capacity, enrolled: 0, sessions: 0, fill: 0 };
       cur.enrolled += s.enrolled;
       cur.capacity = Math.max(cur.capacity, s.capacity);
+      cur.fill += Math.min(100, (s.enrolled / Math.max(s.capacity, 1)) * 100);
       cur.sessions += 1;
       map.set(s.room, cur);
     }
     return [...map.values()]
       .map((r) => ({
         ...r,
-        utilization: Math.min(100, Math.round((r.enrolled / Math.max(r.capacity, 1)) * 100)),
+        utilization: Math.round(r.fill / Math.max(r.sessions, 1)),
       }))
-      .sort((a, b) => b.sessions - a.sessions);
+      .sort((a, b) => b.utilization - a.utilization);
   });
 
   upcomingSessions = computed(() => {
