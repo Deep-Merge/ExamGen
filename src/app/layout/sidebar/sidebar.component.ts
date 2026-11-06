@@ -30,25 +30,9 @@ interface NavGroup {
   template: `
     <aside class="sidebar">
       <div class="brand">
-        <span class="mark" aria-hidden="true">
-          <svg viewBox="0 0 32 32" width="32" height="32">
-            <path
-              d="M16 3.2 27.2 9.6v12.8L16 28.8 4.8 22.4V9.6L16 3.2Z"
-              fill="#2563EB"
-            />
-            <path
-              d="m10.2 16.2 3.6 3.6 8-8.2"
-              fill="none"
-              stroke="#fff"
-              stroke-width="2.2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </span>
         <div class="brand-text">
           <div class="name" aria-label="Evalis">
-            <span class="exam">Eval</span><span class="gen">is</span>
+            <span class="ch">E</span><span class="ch">v</span><span class="ch">a</span><span class="ch">l</span><span class="accent">i</span><span class="accent">s</span>
           </div>
           <div class="tag">
             <span class="rule"></span>
@@ -56,6 +40,7 @@ interface NavGroup {
             <span class="rule"></span>
           </div>
         </div>
+        <span class="monogram" aria-hidden="true">E</span>
       </div>
 
       <nav class="nav">
@@ -171,63 +156,59 @@ interface NavGroup {
       .brand {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 20px 16px 18px;
+        padding: 22px 18px 18px;
         border-bottom: 1px solid rgba(148, 163, 184, 0.1);
         background: #0b1220;
-      }
-      .mark {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        background: rgba(37, 99, 235, 0.12);
-        transition: background 0.2s ease, transform 0.2s ease;
-      }
-      .brand:hover .mark {
-        background: rgba(37, 99, 235, 0.2);
-        transform: translateY(-1px);
-      }
-      .mark svg {
-        display: block;
       }
       .brand-text {
         min-width: 0;
       }
       .name {
-        font-weight: 750;
-        font-size: 22px;
-        letter-spacing: -0.04em;
-        line-height: 1.1;
+        font-weight: 650;
+        font-size: 26px;
+        letter-spacing: -0.055em;
+        line-height: 1;
+        font-feature-settings: "ss01" on, "cv11" on;
       }
-      .name .exam {
+      .name .ch {
         color: #f8fafc;
       }
-      .name .gen {
-        color: #3b82f6;
+      .name .accent {
+        color: #60a5fa;
+        font-weight: 700;
       }
       .tag {
         display: flex;
         align-items: center;
-        gap: 6px;
-        margin-top: 5px;
-        font-size: 8.5px;
+        gap: 8px;
+        margin-top: 8px;
+        font-size: 9px;
         font-weight: 600;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
         color: #94a3b8;
         white-space: nowrap;
       }
       .tag .rule {
         display: inline-block;
-        width: 10px;
+        width: 14px;
         height: 1px;
         background: #3b82f6;
         flex-shrink: 0;
-        opacity: 0.85;
+        opacity: 0.7;
+      }
+      .monogram {
+        display: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        color: #f8fafc;
+        background: rgba(37, 99, 235, 0.16);
       }
       .nav {
         flex: 1;
@@ -306,6 +287,9 @@ interface NavGroup {
         .footer,
         .brand-text {
           display: none;
+        }
+        .monogram {
+          display: inline-flex;
         }
         .brand {
           justify-content: center;

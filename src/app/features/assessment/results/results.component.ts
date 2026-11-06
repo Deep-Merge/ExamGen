@@ -23,16 +23,27 @@ import { StatusBadgeComponent, statusTone } from '../../../shared/components/sta
       subtitle="Score distribution, pass rates, and exportable result sets"
       eyebrow="Assessment"
     >
-      <button type="button" class="eg-btn eg-btn--primary" (click)="exportResults()">Export CSV</button>
+      <button type="button" class="export-btn" (click)="exportResults()">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3v12" />
+          <path d="m7 11 5 5 5-5" />
+          <path d="M5 21h14" />
+        </svg>
+        Export CSV
+      </button>
     </eg-page-header>
 
     <div class="top">
       <div class="eg-card chart-card">
         <div class="card-head">
-          <h2>Score distribution</h2>
-          <span class="eg-caption">{{ results().length }} completed attempts</span>
+          <div>
+            <h2>Score distribution</h2>
+            <div class="eg-caption">{{ results().length }} completed attempts · last 30 days</div>
+          </div>
         </div>
-        <canvas baseChart [data]="barData" [options]="barOptions" [type]="'bar'"></canvas>
+        <div class="chart-wrap">
+          <canvas baseChart [data]="chartData" [options]="chartOptions" [type]="'line'"></canvas>
+        </div>
       </div>
 
       <div class="eg-card summary-card">
@@ -80,23 +91,60 @@ import { StatusBadgeComponent, statusTone } from '../../../shared/components/sta
     `
       .top {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 280px;
+        grid-template-columns: minmax(0, 1.4fr) minmax(240px, 320px);
         gap: 16px;
         margin-bottom: 16px;
+        align-items: stretch;
+      }
+      .export-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 38px;
+        padding: 0 14px;
+        border-radius: 10px;
+        border: 1px solid #dbe3ee;
+        background: #fff;
+        color: #0f172a;
+        font-size: 13.5px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        cursor: pointer;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.18s ease;
+      }
+      .export-btn:hover {
+        background: #f8fafc;
+        border-color: #93c5fd;
+        color: #1d4ed8;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.12);
+        transform: translateY(-1px);
+      }
+      .export-btn:active {
+        transform: translateY(0);
       }
       .chart-card,
       .summary-card {
-        padding: 16px;
+        padding: 18px 20px;
+      }
+      .chart-wrap {
+        height: 240px;
+      }
+      .chart-wrap canvas {
+        max-height: 240px;
+        width: 100% !important;
       }
       .card-head {
         display: flex;
         justify-content: space-between;
-        align-items: baseline;
-        margin-bottom: 12px;
+        align-items: flex-start;
+        margin-bottom: 8px;
       }
       h2 {
-        font-size: 14px;
-        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin: 0 0 2px;
       }
       .sum-row {
         display: flex;
@@ -164,25 +212,53 @@ export class ResultsComponent {
   maxScore = computed(() => Math.max(...this.results().map((r) => r.percent), 0));
   minScore = computed(() => Math.min(...this.results().map((r) => r.percent), 100));
 
-  barData: ChartConfiguration<'bar'>['data'] = {
+  chartData: ChartConfiguration<'line'>['data'] = {
     labels: ['0–49', '50–59', '60–69', '70–79', '80–89', '90–100'],
     datasets: [
       {
         label: 'Candidates',
         data: this.buildBuckets(),
-        backgroundColor: '#2563EB',
-        borderRadius: 4,
+        borderColor: '#2563EB',
+        backgroundColor: 'rgba(37, 99, 235, 0.10)',
+        fill: true,
+        tension: 0.42,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: '#fff',
+        pointBorderColor: '#2563EB',
+        pointBorderWidth: 2,
+        borderWidth: 2,
       },
     ],
   };
 
-  barOptions: ChartConfiguration<'bar'>['options'] = {
+  chartOptions: ChartConfiguration<'line'>['options'] = {
     responsive: true,
-    maintainAspectRatio: true,
-    plugins: { legend: { display: false } },
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#0f172a',
+        padding: 10,
+        cornerRadius: 8,
+        displayColors: false,
+        titleFont: { size: 12 },
+        bodyFont: { size: 12 },
+      },
+    },
     scales: {
-      y: { beginAtZero: true, ticks: { stepSize: 1 } },
-      x: { grid: { display: false } },
+      x: {
+        grid: { display: false },
+        ticks: { color: '#94a3b8', font: { size: 11 } },
+        border: { display: false },
+      },
+      y: {
+        beginAtZero: true,
+        grid: { color: '#f1f5f9' },
+        ticks: { color: '#94a3b8', font: { size: 11 }, precision: 0, maxTicksLimit: 5 },
+        border: { display: false },
+      },
     },
   };
 
@@ -201,10 +277,21 @@ export class ResultsComponent {
   }
 
   exportResults(): void {
-    this.snack.open(
-      `Export queued — ${this.results().length} rows will be delivered to your email.`,
-      'OK',
-      { duration: 4000 }
+    const rows = this.results();
+    const header = ['Candidate', 'Exam', 'Organization', 'Score', 'Max', 'Percent', 'Status', 'Completed'];
+    const body = rows.map((r) =>
+      [r.candidateName, r.examTitle, r.organizationName, r.score, r.maxScore, r.percent, r.status, r.completedAt]
+        .map((cell) => `"${String(cell).replace(/"/g, '""')}"`)
+        .join(',')
     );
+    const csv = [header.join(','), ...body].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'evalis-results.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+    this.snack.open(`Exported ${rows.length} rows.`, 'OK', { duration: 2500 });
   }
 }

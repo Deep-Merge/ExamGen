@@ -44,3 +44,6 @@ Thumbs.db
 
 #docs
 _docs/
+
+# Local portfolio screenshots
+/portfolio/
